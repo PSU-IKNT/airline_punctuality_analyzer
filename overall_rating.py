@@ -17,12 +17,12 @@ class AirlineRatingCalculator:
 
         if airline_iata_code not in self.rating_dataset:
             self.rating_dataset[airline_iata_code] = {
-                "total_flights": 0,
-                "on_time_departures": 0,
-                "on_time_arrivals": 0
+                "totalFlights": 0,
+                "onTimeDepartures": 0,
+                "onTimeArrivals": 0
             }
 
-        self.rating_dataset[airline_iata_code]["total_flights"] += 1
+        self.rating_dataset[airline_iata_code]["totalFlights"] += 1
 
         plan_departure = datetime.fromisoformat(flight_data["planDeparture"])
         fact_departure = datetime.fromisoformat(flight_data["factDeparture"])
@@ -34,30 +34,32 @@ class AirlineRatingCalculator:
         arrival_delay = (fact_arrival - plan_arrival).total_seconds() // 60
 
         if departure_delay <= 15:
-            self.rating_dataset[airline_iata_code]["on_time_departures"] += 1
+            self.rating_dataset[airline_iata_code]["onTimeDepartures"] += 1
         if arrival_delay <= 15:
-            self.rating_dataset[airline_iata_code]["on_time_arrivals"] += 1
+            self.rating_dataset[airline_iata_code]["onTimeArrivals"] += 1
 
     async def add_rating_table(self):
         for airline_iata_code, data in self.rating_dataset.items():
-            departure_rating = (data["on_time_departures"] / data["total_flights"]) * 100
-            arrival_rating = (data["on_time_arrivals"] / data["total_flights"]) * 100
+            departure_rating = (data["onTimeDepartures"] / data["totalFlights"]) * 100
+            arrival_rating = (data["onTimeArrivals"] / data["totalFlights"]) * 100
             new_rating = AirlineOverAllRating(
 
-                airline_iata_code = airline_iata_code,
-                total_flights = data["total_flights"],
+                airlineIataCode = airline_iata_code,
+                totalFlights = data["totalFlights"],
 
-                on_time_departures = data["on_time_departures"],
-                on_time_arrivals = data["on_time_arrivals"],
+                onTimeDepartures = data["onTimeDepartures"],
+                onTimeArrivals = data["onTimeArrivals"],
 
-                off_time_departures = data["total_flights"] - data["on_time_departures"],
-                off_time_arrivals = data["total_flights"] - data["on_time_arrivals"],
+                offTimeDepartures = data["totalFlights"] - data["onTimeDepartures"],
+                offTimeArrivals = data["totalFlights"] - data["onTimeArrivals"],
 
-                departure_rating = departure_rating,
-                arrival_rating = arrival_rating,
-                mid_rating = (departure_rating + arrival_rating) / 2,
+                departureRating = departure_rating,
+                arrivalRating = arrival_rating,
+                midRating = (departure_rating + arrival_rating) / 2,
+                ratingDate = datetime.now()
             )
             await AirRepository.add_overall_rating(new_rating)
+
     async def add_flight_dataset(self, flight_data):
 
         departure_airport = flight_data["departureAirport"]
@@ -84,38 +86,38 @@ class AirlineRatingCalculator:
 
         if airline_iata_code not in self.fly_data[arrival_airport]:
             self.fly_data[arrival_airport][airline_iata_code] = {
-                "total_flights": 0,
-                "on_time_arrivals": 0,
+                "totalFlights": 0,
+                "onTimeArrivals": 0,
 
             }
 
-        self.fly_data[arrival_airport][airline_iata_code]["total_flights"] += 1
+        self.fly_data[arrival_airport][airline_iata_code]["totalFlights"] += 1
 
         if airline_iata_code not in self.fly_data[departure_airport]:
             self.fly_data[departure_airport][airline_iata_code] = {
-                "total_flights": 0,
-                "on_time_departures": 0,
+                "totalFlights": 0,
+                "onTimeDepartures": 0,
             }
 
-        self.fly_data[departure_airport][airline_iata_code]["total_flights"] += 1
+        self.fly_data[departure_airport][airline_iata_code]["totalFlights"] += 1
 
-        if 'on_time_departures' not in self.fly_data[departure_airport][airline_iata_code]:
-            self.fly_data[departure_airport][airline_iata_code]["on_time_departures"] = 0
+        if 'onTimeDepartures' not in self.fly_data[departure_airport][airline_iata_code]:
+            self.fly_data[departure_airport][airline_iata_code]["onTimeDepartures"] = 0
 
         if departure_delay <= 15:
-            self.fly_data[departure_airport][airline_iata_code]["on_time_departures"] += 1
+            self.fly_data[departure_airport][airline_iata_code]["onTimeDepartures"] += 1
 
-        if 'on_time_arrivals' not in self.fly_data[arrival_airport][airline_iata_code]:
-            self.fly_data[arrival_airport][airline_iata_code]["on_time_arrivals"] = 0
+        if 'onTimeArrivals' not in self.fly_data[arrival_airport][airline_iata_code]:
+            self.fly_data[arrival_airport][airline_iata_code]["onTimeArrivals"] = 0
 
         if arrival_delay <= 15:
-            self.fly_data[arrival_airport][airline_iata_code]["on_time_arrivals"] += 1
+            self.fly_data[arrival_airport][airline_iata_code]["onTimeArrivals"] += 1
 
 
     async def add_fly_data_json(self):
         json_dump = json.dumps(self.fly_data, indent=4)
         json_dump = json.loads(json_dump)
-        new_dump = FlightData(json_data=json_dump)
+        new_dump = FlightData(jsonData=json_dump)
         await AirRepository.add_flight_data(new_dump)
 
 async def fetch_flight_data(page_number):

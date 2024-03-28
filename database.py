@@ -16,25 +16,26 @@ class AirlineOverAllRating(Base):
     __tablename__ = 'airline_overall_rating'
 
     id = Column(Integer, primary_key=True)
-    airline_iata_code = Column(String)
-    total_flights = Column(Integer)
+    airlineIataCode = Column(String)
+    totalFlights = Column(Integer)
 
-    on_time_departures = Column(Integer)
-    on_time_arrivals = Column(Integer)
+    onTimeDepartures = Column(Integer)
+    onTimeArrivals = Column(Integer)
 
-    off_time_departures = Column(Integer)
-    off_time_arrivals = Column(Integer)
+    offTimeDepartures = Column(Integer)
+    offTimeArrivals = Column(Integer)
 
-    departure_rating = Column(Float)
-    arrival_rating = Column(Float)
+    departureRating = Column(Float)
+    arrivalRating = Column(Float)
 
-    mid_rating = Column(Float)
+    midRating = Column(Float)
+    ratingDate = Column(DateTime)
 
 class FlightData(Base):
     __tablename__ = 'flight_data'
 
     id = Column(Integer, primary_key=True)
-    json_data = Column(JSON)
+    jsonData = Column(JSON)
 
 
 async def create_tables():

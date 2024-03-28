@@ -1,6 +1,6 @@
 import json
 from database import new_session, AirlineOverAllRating, FlightData
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 class AirRepository:
 
@@ -32,3 +32,11 @@ class AirRepository:
             entry = result.scalars().all()
             print(entry)
             return entry
+
+    @classmethod
+    async def get_last_update_date(cls):
+        async with new_session() as session:
+            query = select(func.max(AirlineOverAllRating.ratingDate))
+            result = await session.execute(query)
+            last_update_date = result.scalar()
+            return last_update_date
