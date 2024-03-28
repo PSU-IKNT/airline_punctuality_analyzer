@@ -3,6 +3,7 @@ from database import create_tables, drop_tables
 from contextlib import asynccontextmanager
 from routes import router
 
+from fastapi.middleware.cors import CORSMiddleware
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_tables()
@@ -10,8 +11,8 @@ async def lifespan(app: FastAPI):
     yield
 
 description = """
-# AviaRatingAnalysisAPI - быстрый инструмент для анализа больших объемов данных
-# и выстраивания рейтинга мировых авиакомпаний🚀
+# AviaRatingAnalysisAPI - быстрый инструмент для анализа больших
+# объемов данных и выстраивания рейтинга мировых авиакомпаний🚀
 
 ## Возможности
 ### - Построение рейтинга авиакомпаний на основе задержанных рейсов из дампов вашей базы данных
@@ -26,4 +27,12 @@ app = FastAPI(openapi_prefix="/api/v2/docs", lifespan=lifespan,
         "name": "NGINX DOCS",
         "url": "https://nginx.org/en/docs/",
     })
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],  # Разрешите все источники (* для всех)
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],  # Разрешенные методы
+    allow_headers=["*"],  # Разрешить все заголовки
+)
 app.include_router(router)
