@@ -5,6 +5,7 @@ from database import AirlineOverAllRating
 from repositories import AirRepository, FlightData
 import aiohttp
 
+
 class AirlineRatingCalculator:
 
     def __init__(self):
@@ -24,11 +25,13 @@ class AirlineRatingCalculator:
 
         self.rating_dataset[airline_iata_code]["totalFlights"] += 1
 
-        plan_departure = datetime.fromisoformat(flight_data["planDeparture"])
-        fact_departure = datetime.fromisoformat(flight_data["factDeparture"])
+        plan_departure = datetime.strptime(flight_data["planDeparture"], "%Y-%m-%dT%H:%M:%S")
 
-        plan_arrival = datetime.fromisoformat(flight_data["planArrival"])
-        fact_arrival = datetime.fromisoformat(flight_data["factArrival"])
+        fact_departure = datetime.strptime(flight_data["factDeparture"], "%Y-%m-%dT%H:%M:%S")
+        plan_arrival = datetime.strptime(flight_data["planArrival"], "%Y-%m-%dT%H:%M:%S")
+
+        fact_arrival = datetime.strptime(flight_data["factArrival"], "%Y-%m-%dT%H:%M:%S")
+
 
         departure_delay = (fact_departure - plan_departure).total_seconds() // 60
         arrival_delay = (fact_arrival - plan_arrival).total_seconds() // 60
@@ -67,11 +70,11 @@ class AirlineRatingCalculator:
 
         airline_iata_code = flight_data["airlineIataCode"]
 
-        plan_departure = datetime.fromisoformat(flight_data["planDeparture"])
-        fact_departure = datetime.fromisoformat(flight_data["factDeparture"])
+        plan_departure = datetime.strptime(flight_data["planDeparture"], "%Y-%m-%dT%H:%M:%S")
+        fact_departure = datetime.strptime(flight_data["factDeparture"], "%Y-%m-%dT%H:%M:%S")
 
-        plan_arrival = datetime.fromisoformat(flight_data["planArrival"])
-        fact_arrival = datetime.fromisoformat(flight_data["factArrival"])
+        plan_arrival = datetime.strptime(flight_data["planArrival"], "%Y-%m-%dT%H:%M:%S")
+        fact_arrival = datetime.strptime(flight_data["factArrival"], "%Y-%m-%dT%H:%M:%S")
 
         departure_delay = (fact_departure - plan_departure).total_seconds() // 60
         arrival_delay = (fact_arrival - plan_arrival).total_seconds() // 60
@@ -138,6 +141,7 @@ async def fetch_flight_data(page_number):
 
 calculator = AirlineRatingCalculator()
 
+
 async def run_overall_rating():
     page_number = 0
     while True:
@@ -146,8 +150,11 @@ async def run_overall_rating():
             break
 
         for flight_data in flight_data_list:
-            await calculator.add_flight(flight_data)
-            await calculator.add_flight_dataset(flight_data)
+            if flight_data["factDeparture"] is None or flight_data["factArrival"] is None:
+                continue  # Переходим к следующему элементу, если factDeparture или factArrival равны None
+            else:
+                await calculator.add_flight(flight_data)
+                await calculator.add_flight_dataset(flight_data)
 
         page_number += 1
 
